@@ -1,33 +1,26 @@
-const express = require('express');
+const bcrypt = require("bcryptjs"); // 👈 switched to bcryptjs
+const express = require("express");
 const router = express.Router();
-const User = require('../models/user'); // uses signupUsers collection now
+const User = require("../models/signupUsers");
 
 router.post("/", async (req, res) => {
-  const { email, password } = req.body;
-
-  console.log("Login attempt with:", email, password);
-
   try {
-    const user = await User.findOne({ email: email.trim() });
+    const { email, password } = req.body;
 
+    const user = await User.findOne({ email });
     if (!user) {
-      console.log("No user found with email:", email);
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    console.log("User found:", user);
-
-    // Compare plain passwords (NOTE: no bcrypt yet)
-    if (user.password.trim() !== password.trim()) {
-      console.log("Password mismatch: DB:", user.password, "Entered:", password);
+    // 🔐 compare hash using bcryptjs
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    return res.status(200).json({ message: "Login successful" });
-
+    res.status(200).json({ message: "Login successful", user });
   } catch (err) {
-    console.error("Login error:", err);
-    return res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
