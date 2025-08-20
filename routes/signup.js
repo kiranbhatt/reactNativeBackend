@@ -8,9 +8,10 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    const normalizedEmail = String(email || "").trim().toLowerCase();
 
     // check if user already exists
-    const existingUser = await SignUpUser.findOne({ email });
+    const existingUser = await SignUpUser.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -21,7 +22,7 @@ router.post("/", async (req, res) => {
     // create new user
     const newUser = new SignUpUser({
       name,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
     });
 
