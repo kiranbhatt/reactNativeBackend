@@ -11,7 +11,17 @@ const cartRoutes = require("./routes/cart");         // ✅ matches cart.js
 const orderRoutes = require("./routes/orders");      // ✅ matches orders.js
 
 const app = express();
-app.use(cors());
+
+// Basic request logger
+app.use((req, res, next) => {
+	console.log(`${req.method} ${req.url}`);
+	next();
+});
+
+// CORS
+app.use(cors({
+	methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+}));
 app.use(express.json());
 
 // ✅ Connect to DB
